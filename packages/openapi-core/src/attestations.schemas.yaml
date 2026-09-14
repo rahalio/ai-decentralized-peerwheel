@@ -1,0 +1,80 @@
+openapi: 3.1.0
+info:
+  title: Attestations schemas
+  version: 0.1.0
+paths: {}
+components:
+  schemas:
+    AttestationId:
+      type: string
+      pattern: '^att_[0-9A-HJKMNP-TV-Z]{26}$'
+    AttestationResult:
+      type: string
+      enum: [passed, failed, hold]
+    AttestationPhase:
+      type: string
+      enum: [pre, during, post]
+    PurposeTag:
+      type: string
+      enum: [integrity_proof, dispute_evidence, retention_minimised]
+    IntegrityAttestation:
+      type: object
+      required: [attestationId, rideId, result, phase, purposeTag, createdAt]
+      properties:
+        attestationId:
+          $ref: '#/components/schemas/AttestationId'
+        rideId: { type: string }
+        vehicleId: { type: string }
+        result:
+          $ref: '#/components/schemas/AttestationResult'
+        phase:
+          $ref: '#/components/schemas/AttestationPhase'
+        proofHash: { type: string }
+        purposeTag:
+          $ref: '#/components/schemas/PurposeTag'
+        sensorTypes:
+          type: array
+          items: { type: string }
+        holdCleared:
+          type: boolean
+        createdAt: { type: string, format: date-time }
+    IntegrityAttestationCreate:
+      type: object
+      required: [result, phase, purposeTag]
+      properties:
+        result:
+          $ref: '#/components/schemas/AttestationResult'
+        phase:
+          $ref: '#/components/schemas/AttestationPhase'
+        proofHash: { type: string }
+        purposeTag:
+          $ref: '#/components/schemas/PurposeTag'
+        sensorTypes:
+          type: array
+          items: { type: string }
+        vehicleId: { type: string }
+    AttestationListData:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/IntegrityAttestation'
+        nextCursor: { type: string }
+    IntegrityAttestationResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/IntegrityAttestation'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+    AttestationListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/AttestationListData'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta

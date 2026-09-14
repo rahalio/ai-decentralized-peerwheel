@@ -1,0 +1,138 @@
+openapi: 3.1.0
+info:
+  title: Settlements API
+  version: 0.1.0
+  description: |
+    Peer or escrow payout with disclosed fee, fiat/crypto rails, and attestation unlock (BR-1, BR-8).
+  license:
+    name: Proprietary
+    url: https://peerwheel.local/license
+  x-domain: stl
+servers:
+  - url: https://api.peerwheel.local
+security:
+  - apiKey: []
+tags:
+  - name: Settlements
+    description: Peer payouts
+paths:
+  /v1/settlements:
+    get:
+      operationId: listSettlements
+      tags: [Settlements]
+      summary: List settlements
+      parameters:
+        - name: cursor
+          in: query
+          schema: { type: string }
+        - name: status
+          in: query
+          schema:
+            $ref: ./settlements.schemas.yaml#/components/schemas/SettlementStatus
+      responses:
+        '200':
+          description: Settlements page
+          content:
+            application/json:
+              schema:
+                $ref: ./settlements.schemas.yaml#/components/schemas/SettlementListResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/settlements/{settlementId}:
+    get:
+      operationId: getSettlement
+      tags: [Settlements]
+      summary: Get settlement detail
+      parameters:
+        - name: settlementId
+          in: path
+          required: true
+          schema:
+            $ref: ./settlements.schemas.yaml#/components/schemas/SettlementId
+      responses:
+        '200':
+          description: Settlement
+          content:
+            application/json:
+              schema:
+                $ref: ./settlements.schemas.yaml#/components/schemas/SettlementResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/settlements/{settlementId}/execute:
+    post:
+      operationId: executeSettlement
+      tags: [Settlements]
+      summary: Execute peer payout when attestation unlocks
+      parameters:
+        - name: settlementId
+          in: path
+          required: true
+          schema:
+            $ref: ./settlements.schemas.yaml#/components/schemas/SettlementId
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: ./settlements.schemas.yaml#/components/schemas/SettlementExecuteRequest
+      responses:
+        '200':
+          description: Settlement executed or still blocked
+          content:
+            application/json:
+              schema:
+                $ref: ./settlements.schemas.yaml#/components/schemas/SettlementResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        '409':
+          $ref: ./common/responses.yaml#/components/responses/Conflict
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/settlements/{settlementId}/retry:
+    post:
+      operationId: retrySettlement
+      tags: [Settlements]
+      summary: Retry failed rail transfer
+      parameters:
+        - name: settlementId
+          in: path
+          required: true
+          schema:
+            $ref: ./settlements.schemas.yaml#/components/schemas/SettlementId
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: ./settlements.schemas.yaml#/components/schemas/SettlementExecuteRequest
+      responses:
+        '200':
+          description: Retry result
+          content:
+            application/json:
+              schema:
+                $ref: ./settlements.schemas.yaml#/components/schemas/SettlementResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+components:
+  securitySchemes:
+    apiKey:
+      $ref: ./common/security.yaml#/components/securitySchemes/apiKey

@@ -1,0 +1,84 @@
+openapi: 3.1.0
+info:
+  title: Corridors schemas
+  version: 0.1.0
+paths: {}
+components:
+  schemas:
+    CorridorId:
+      type: string
+      pattern: '^cor_[0-9A-HJKMNP-TV-Z]{26}$'
+    CorridorStatus:
+      type: string
+      enum: [active, paused]
+    VehicleClass:
+      type: string
+      enum: [sedan_av, van_av, shared_shuttle, other]
+    Corridor:
+      type: object
+      required: [corridorId, name, status, createdAt, updatedAt]
+      properties:
+        corridorId:
+          $ref: '#/components/schemas/CorridorId'
+        name: { type: string }
+        metro: { type: string }
+        status:
+          $ref: '#/components/schemas/CorridorStatus'
+        pausedVehicleClasses:
+          type: array
+          items:
+            $ref: '#/components/schemas/VehicleClass'
+        licensingTags:
+          type: array
+          items: { type: string }
+        pauseReason: { type: string }
+        pausedAt: { type: string, format: date-time }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    CorridorPauseRequest:
+      type: object
+      properties:
+        vehicleClasses:
+          type: array
+          items:
+            $ref: '#/components/schemas/VehicleClass'
+        reason: { type: string }
+    CorridorResumeRequest:
+      type: object
+      properties:
+        vehicleClasses:
+          type: array
+          items:
+            $ref: '#/components/schemas/VehicleClass'
+    CorridorLicensingUpdate:
+      type: object
+      required: [licensingTags]
+      properties:
+        licensingTags:
+          type: array
+          items: { type: string }
+    CorridorListData:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Corridor'
+        nextCursor: { type: string }
+    CorridorResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/Corridor'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+    CorridorListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/CorridorListData'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta

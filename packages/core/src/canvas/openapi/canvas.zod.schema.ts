@@ -1,0 +1,431 @@
+import { makeApi, Zodios, type ZodiosOptions } from '@zodios/core';
+import { z } from 'zod';
+
+const updateCanvasFit_Body = z
+  .object({
+    valueProposition: z.string().min(1),
+    customerSegments: z.array(z.string()).min(1),
+    channelMetrics: z
+      .array(
+        z
+          .object({
+            channel: z.enum(['app', 'oem_deeplink', 'corporate']),
+            rides: z.number().int(),
+            conversionRate: z.number(),
+            revenue: z.number().optional(),
+          })
+          .passthrough()
+      )
+      .optional(),
+    costRevenuePlan: z
+      .object({
+        period: z.string(),
+        plannedCost: z.number(),
+        plannedRevenue: z.number(),
+        actualCost: z.number().optional(),
+        actualRevenue: z.number().optional(),
+        costVariance: z.number().optional(),
+        revenueVariance: z.number().optional(),
+      })
+      .passthrough()
+      .optional(),
+    note: z.string().optional(),
+    publishToMatching: z.boolean().optional(),
+  })
+  .passthrough();
+const Problem = z
+  .object({
+    type: z.string().url(),
+    title: z.string(),
+    status: z.number().int(),
+    detail: z.string(),
+    instance: z.string().url(),
+    code: z.string(),
+  })
+  .partial()
+  .passthrough();
+const CanvasFitId = z.string();
+const ChannelMetric = z
+  .object({
+    channel: z.enum(['app', 'oem_deeplink', 'corporate']),
+    rides: z.number().int(),
+    conversionRate: z.number(),
+    revenue: z.number().optional(),
+  })
+  .passthrough();
+const CostRevenuePlan = z
+  .object({
+    period: z.string(),
+    plannedCost: z.number(),
+    plannedRevenue: z.number(),
+    actualCost: z.number().optional(),
+    actualRevenue: z.number().optional(),
+    costVariance: z.number().optional(),
+    revenueVariance: z.number().optional(),
+  })
+  .passthrough();
+const CanvasRevision = z
+  .object({
+    revisedAt: z.string().datetime({ offset: true }),
+    valueProposition: z.string(),
+    customerSegments: z.array(z.string()),
+    note: z.string().optional(),
+  })
+  .passthrough();
+const CanvasFit = z
+  .object({
+    canvasFitId: z.string().regex(/^cvs_[0-9A-HJKMNP-TV-Z]{26}$/),
+    valueProposition: z.string().min(1),
+    customerSegments: z.array(z.string()).min(1),
+    channelMetrics: z
+      .array(
+        z
+          .object({
+            channel: z.enum(['app', 'oem_deeplink', 'corporate']),
+            rides: z.number().int(),
+            conversionRate: z.number(),
+            revenue: z.number().optional(),
+          })
+          .passthrough()
+      )
+      .optional(),
+    costRevenuePlan: z
+      .object({
+        period: z.string(),
+        plannedCost: z.number(),
+        plannedRevenue: z.number(),
+        actualCost: z.number().optional(),
+        actualRevenue: z.number().optional(),
+        costVariance: z.number().optional(),
+        revenueVariance: z.number().optional(),
+      })
+      .passthrough()
+      .optional(),
+    revisions: z
+      .array(
+        z
+          .object({
+            revisedAt: z.string().datetime({ offset: true }),
+            valueProposition: z.string(),
+            customerSegments: z.array(z.string()),
+            note: z.string().optional(),
+          })
+          .passthrough()
+      )
+      .optional(),
+    publishedToMatching: z.boolean().optional(),
+    updatedAt: z.string().datetime({ offset: true }),
+  })
+  .passthrough();
+const ResponseMeta = z
+  .object({
+    requestId: z.string().uuid(),
+    correlationId: z.string(),
+    generatedAt: z.string().datetime({ offset: true }),
+  })
+  .partial()
+  .passthrough();
+const CanvasFitResponse = z
+  .object({
+    data: z
+      .object({
+        canvasFitId: z.string().regex(/^cvs_[0-9A-HJKMNP-TV-Z]{26}$/),
+        valueProposition: z.string().min(1),
+        customerSegments: z.array(z.string()).min(1),
+        channelMetrics: z
+          .array(
+            z
+              .object({
+                channel: z.enum(['app', 'oem_deeplink', 'corporate']),
+                rides: z.number().int(),
+                conversionRate: z.number(),
+                revenue: z.number().optional(),
+              })
+              .passthrough()
+          )
+          .optional(),
+        costRevenuePlan: z
+          .object({
+            period: z.string(),
+            plannedCost: z.number(),
+            plannedRevenue: z.number(),
+            actualCost: z.number().optional(),
+            actualRevenue: z.number().optional(),
+            costVariance: z.number().optional(),
+            revenueVariance: z.number().optional(),
+          })
+          .passthrough()
+          .optional(),
+        revisions: z
+          .array(
+            z
+              .object({
+                revisedAt: z.string().datetime({ offset: true }),
+                valueProposition: z.string(),
+                customerSegments: z.array(z.string()),
+                note: z.string().optional(),
+              })
+              .passthrough()
+          )
+          .optional(),
+        publishedToMatching: z.boolean().optional(),
+        updatedAt: z.string().datetime({ offset: true }),
+      })
+      .passthrough(),
+    meta: z
+      .object({
+        requestId: z.string().uuid(),
+        correlationId: z.string(),
+        generatedAt: z.string().datetime({ offset: true }),
+      })
+      .partial()
+      .passthrough()
+      .optional(),
+  })
+  .passthrough();
+const CanvasFitUpdate = z
+  .object({
+    valueProposition: z.string().min(1),
+    customerSegments: z.array(z.string()).min(1),
+    channelMetrics: z
+      .array(
+        z
+          .object({
+            channel: z.enum(['app', 'oem_deeplink', 'corporate']),
+            rides: z.number().int(),
+            conversionRate: z.number(),
+            revenue: z.number().optional(),
+          })
+          .passthrough()
+      )
+      .optional(),
+    costRevenuePlan: z
+      .object({
+        period: z.string(),
+        plannedCost: z.number(),
+        plannedRevenue: z.number(),
+        actualCost: z.number().optional(),
+        actualRevenue: z.number().optional(),
+        costVariance: z.number().optional(),
+        revenueVariance: z.number().optional(),
+      })
+      .passthrough()
+      .optional(),
+    note: z.string().optional(),
+    publishToMatching: z.boolean().optional(),
+  })
+  .passthrough();
+
+export const schemas: any = {
+  updateCanvasFit_Body,
+  Problem,
+  CanvasFitId,
+  ChannelMetric,
+  CostRevenuePlan,
+  CanvasRevision,
+  CanvasFit,
+  ResponseMeta,
+  CanvasFitResponse,
+  CanvasFitUpdate,
+};
+
+const endpoints = makeApi([
+  {
+    method: 'get',
+    path: '/v1/canvas/fits',
+    alias: 'getCanvasFit',
+    requestFormat: 'json',
+    response: z
+      .object({
+        data: z
+          .object({
+            canvasFitId: z.string().regex(/^cvs_[0-9A-HJKMNP-TV-Z]{26}$/),
+            valueProposition: z.string().min(1),
+            customerSegments: z.array(z.string()).min(1),
+            channelMetrics: z
+              .array(
+                z
+                  .object({
+                    channel: z.enum(['app', 'oem_deeplink', 'corporate']),
+                    rides: z.number().int(),
+                    conversionRate: z.number(),
+                    revenue: z.number().optional(),
+                  })
+                  .passthrough()
+              )
+              .optional(),
+            costRevenuePlan: z
+              .object({
+                period: z.string(),
+                plannedCost: z.number(),
+                plannedRevenue: z.number(),
+                actualCost: z.number().optional(),
+                actualRevenue: z.number().optional(),
+                costVariance: z.number().optional(),
+                revenueVariance: z.number().optional(),
+              })
+              .passthrough()
+              .optional(),
+            revisions: z
+              .array(
+                z
+                  .object({
+                    revisedAt: z.string().datetime({ offset: true }),
+                    valueProposition: z.string(),
+                    customerSegments: z.array(z.string()),
+                    note: z.string().optional(),
+                  })
+                  .passthrough()
+              )
+              .optional(),
+            publishedToMatching: z.boolean().optional(),
+            updatedAt: z.string().datetime({ offset: true }),
+          })
+          .passthrough(),
+        meta: z
+          .object({
+            requestId: z.string().uuid(),
+            correlationId: z.string(),
+            generatedAt: z.string().datetime({ offset: true }),
+          })
+          .partial()
+          .passthrough()
+          .optional(),
+      })
+      .passthrough(),
+    errors: [
+      {
+        status: 401,
+        description: `Missing or invalid API key`,
+        schema: z
+          .object({
+            type: z.string().url(),
+            title: z.string(),
+            status: z.number().int(),
+            detail: z.string(),
+            instance: z.string().url(),
+            code: z.string(),
+          })
+          .partial()
+          .passthrough(),
+      },
+    ],
+  },
+  {
+    method: 'put',
+    path: '/v1/canvas/fits',
+    alias: 'updateCanvasFit',
+    requestFormat: 'json',
+    parameters: [
+      {
+        name: 'body',
+        type: 'Body',
+        schema: updateCanvasFit_Body,
+      },
+      {
+        name: 'Idempotency-Key',
+        type: 'Header',
+        schema: z.string().min(1).max(128),
+      },
+    ],
+    response: z
+      .object({
+        data: z
+          .object({
+            canvasFitId: z.string().regex(/^cvs_[0-9A-HJKMNP-TV-Z]{26}$/),
+            valueProposition: z.string().min(1),
+            customerSegments: z.array(z.string()).min(1),
+            channelMetrics: z
+              .array(
+                z
+                  .object({
+                    channel: z.enum(['app', 'oem_deeplink', 'corporate']),
+                    rides: z.number().int(),
+                    conversionRate: z.number(),
+                    revenue: z.number().optional(),
+                  })
+                  .passthrough()
+              )
+              .optional(),
+            costRevenuePlan: z
+              .object({
+                period: z.string(),
+                plannedCost: z.number(),
+                plannedRevenue: z.number(),
+                actualCost: z.number().optional(),
+                actualRevenue: z.number().optional(),
+                costVariance: z.number().optional(),
+                revenueVariance: z.number().optional(),
+              })
+              .passthrough()
+              .optional(),
+            revisions: z
+              .array(
+                z
+                  .object({
+                    revisedAt: z.string().datetime({ offset: true }),
+                    valueProposition: z.string(),
+                    customerSegments: z.array(z.string()),
+                    note: z.string().optional(),
+                  })
+                  .passthrough()
+              )
+              .optional(),
+            publishedToMatching: z.boolean().optional(),
+            updatedAt: z.string().datetime({ offset: true }),
+          })
+          .passthrough(),
+        meta: z
+          .object({
+            requestId: z.string().uuid(),
+            correlationId: z.string(),
+            generatedAt: z.string().datetime({ offset: true }),
+          })
+          .partial()
+          .passthrough()
+          .optional(),
+      })
+      .passthrough(),
+    errors: [
+      {
+        status: 400,
+        description: `Malformed request`,
+        schema: z
+          .object({
+            type: z.string().url(),
+            title: z.string(),
+            status: z.number().int(),
+            detail: z.string(),
+            instance: z.string().url(),
+            code: z.string(),
+          })
+          .partial()
+          .passthrough(),
+      },
+      {
+        status: 401,
+        description: `Missing or invalid API key`,
+        schema: z
+          .object({
+            type: z.string().url(),
+            title: z.string(),
+            status: z.number().int(),
+            detail: z.string(),
+            instance: z.string().url(),
+            code: z.string(),
+          })
+          .partial()
+          .passthrough(),
+      },
+    ],
+  },
+]);
+
+export const api: any = new Zodios(
+  'https://api.ddd-codegen-starter.local/v1',
+  endpoints
+);
+
+export function createApiClient(baseUrl: string, options?: ZodiosOptions): any {
+  return new Zodios(baseUrl, endpoints, options);
+}

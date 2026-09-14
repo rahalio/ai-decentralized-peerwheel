@@ -1,0 +1,20 @@
+{
+  "name": "@peerwheel/openapi-core",
+  "version": "0.1.0",
+  "private": true,
+  "description": "OpenAPI contracts for Peerwheel (common + identity + product domains)",
+  "scripts": {
+    "lint:domains": "redocly lint",
+    "bundle:domains": "mkdir -p src/.bundled && pnpm run bundle:yaml && pnpm run bundle:json",
+    "bundle:yaml": "redocly bundle identity --output src/.bundled/identity.openapi.yaml && redocly bundle vehicles --output src/.bundled/vehicles.openapi.yaml && redocly bundle rides --output src/.bundled/rides.openapi.yaml && redocly bundle attestations --output src/.bundled/attestations.openapi.yaml && redocly bundle settlements --output src/.bundled/settlements.openapi.yaml && redocly bundle disputes --output src/.bundled/disputes.openapi.yaml && redocly bundle canvas --output src/.bundled/canvas.openapi.yaml && redocly bundle corridors --output src/.bundled/corridors.openapi.yaml",
+    "bundle:json": "redocly bundle identity --output src/.bundled/identity.json && redocly bundle vehicles --output src/.bundled/vehicles.json && redocly bundle rides --output src/.bundled/rides.json && redocly bundle attestations --output src/.bundled/attestations.json && redocly bundle settlements --output src/.bundled/settlements.json && redocly bundle disputes --output src/.bundled/disputes.json && redocly bundle canvas --output src/.bundled/canvas.json && redocly bundle corridors --output src/.bundled/corridors.json",
+    "lint": "pnpm run lint:domains",
+    "bundle": "pnpm run bundle:domains"
+  },
+  "devDependencies": {
+    "@redocly/cli": "^1.34.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

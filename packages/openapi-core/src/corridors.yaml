@@ -1,0 +1,167 @@
+openapi: 3.1.0
+info:
+  title: Corridors API
+  version: 0.1.0
+  description: |
+    Corridor and vehicle-class pause without rewriting settled history; licensing tags (BR-10).
+  license:
+    name: Proprietary
+    url: https://peerwheel.local/license
+  x-domain: cor
+servers:
+  - url: https://api.peerwheel.local
+security:
+  - apiKey: []
+tags:
+  - name: Corridors
+    description: Corridor pause and licensing
+paths:
+  /v1/corridors:
+    get:
+      operationId: listCorridors
+      tags: [Corridors]
+      summary: List corridors
+      parameters:
+        - name: cursor
+          in: query
+          schema: { type: string }
+        - name: status
+          in: query
+          schema:
+            $ref: ./corridors.schemas.yaml#/components/schemas/CorridorStatus
+      responses:
+        '200':
+          description: Corridors page
+          content:
+            application/json:
+              schema:
+                $ref: ./corridors.schemas.yaml#/components/schemas/CorridorListResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/corridors/{corridorId}:
+    get:
+      operationId: getCorridor
+      tags: [Corridors]
+      summary: Get corridor status
+      parameters:
+        - name: corridorId
+          in: path
+          required: true
+          schema:
+            $ref: ./corridors.schemas.yaml#/components/schemas/CorridorId
+      responses:
+        '200':
+          description: Corridor
+          content:
+            application/json:
+              schema:
+                $ref: ./corridors.schemas.yaml#/components/schemas/CorridorResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/corridors/{corridorId}/pause:
+    post:
+      operationId: pauseCorridor
+      tags: [Corridors]
+      summary: Pause corridor or vehicle classes (non-destructive)
+      parameters:
+        - name: corridorId
+          in: path
+          required: true
+          schema:
+            $ref: ./corridors.schemas.yaml#/components/schemas/CorridorId
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: ./corridors.schemas.yaml#/components/schemas/CorridorPauseRequest
+      responses:
+        '200':
+          description: Paused
+          content:
+            application/json:
+              schema:
+                $ref: ./corridors.schemas.yaml#/components/schemas/CorridorResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/corridors/{corridorId}/resume:
+    post:
+      operationId: resumeCorridor
+      tags: [Corridors]
+      summary: Resume corridor or vehicle classes
+      parameters:
+        - name: corridorId
+          in: path
+          required: true
+          schema:
+            $ref: ./corridors.schemas.yaml#/components/schemas/CorridorId
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: ./corridors.schemas.yaml#/components/schemas/CorridorResumeRequest
+      responses:
+        '200':
+          description: Resumed
+          content:
+            application/json:
+              schema:
+                $ref: ./corridors.schemas.yaml#/components/schemas/CorridorResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/corridors/{corridorId}/licensing:
+    put:
+      operationId: updateCorridorLicensing
+      tags: [Corridors]
+      summary: Update corridor licensing registry tags
+      parameters:
+        - name: corridorId
+          in: path
+          required: true
+          schema:
+            $ref: ./corridors.schemas.yaml#/components/schemas/CorridorId
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./corridors.schemas.yaml#/components/schemas/CorridorLicensingUpdate
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: ./corridors.schemas.yaml#/components/schemas/CorridorResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+components:
+  securitySchemes:
+    apiKey:
+      $ref: ./common/security.yaml#/components/securitySchemes/apiKey

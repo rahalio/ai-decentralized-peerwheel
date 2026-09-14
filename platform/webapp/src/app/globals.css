@@ -1,0 +1,55 @@
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap");
+
+:root {
+  --color-ink: #E8EDF2;
+  --color-asphalt-950: #0B0F14;
+  --color-asphalt-900: #151B24;
+  --color-asphalt-700: #2C3644;
+  --color-yield: #A8D45A;
+  --color-yield-dim: #4F6B28;
+  --color-amber: #E0A04A;
+  --color-coral: #E85D4C;
+  --color-steel: #7A8FA3;
+  --color-brand: #C5D99A;
+  --font-display: "Space Grotesk", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+  --font-body: "Space Grotesk", sans-serif;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 32px;
+  --space-8: 40px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --motion-settle: 180ms ease-out;
+  --motion-hold: 240ms ease-in-out;
+  --motion-wheel: 320ms ease-out;
+}
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  background: var(--color-asphalt-950);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+}
+body {
+  background-image:
+    radial-gradient(circle at 50% 20%, rgba(168, 212, 90, 0.07), transparent 42%),
+    radial-gradient(circle at 50% 50%, transparent 28%, rgba(44, 54, 68, 0.45) 29%, transparent 30%),
+    radial-gradient(circle at 50% 50%, transparent 48%, rgba(44, 54, 68, 0.35) 49%, transparent 50%),
+    linear-gradient(rgba(44, 54, 68, 0.28) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(44, 54, 68, 0.28) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 32px 32px, 32px 32px;
+  background-position: center, center, center, 0 0, 0 0;
+}
+a { color: var(--color-brand); text-decoration: none; }
+a:hover { color: var(--color-yield); }
+button, input, select, textarea {
+  font: inherit;
+}

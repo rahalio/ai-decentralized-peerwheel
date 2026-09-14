@@ -1,0 +1,34 @@
+apis:
+  identity:
+    root: src/identity.yaml
+  vehicles:
+    root: src/vehicles.yaml
+  rides:
+    root: src/rides.yaml
+  attestations:
+    root: src/attestations.yaml
+  settlements:
+    root: src/settlements.yaml
+  disputes:
+    root: src/disputes.yaml
+  canvas:
+    root: src/canvas.yaml
+  corridors:
+    root: src/corridors.yaml
+
+extends:
+  - recommended
+
+rules:
+  no-unused-components: off
+  operation-4xx-response: warn
+  info-license: off
+  info-license-url: off
+  tag-description: off
+  operation-operationId: error
+  no-invalid-media-type-examples: off
+
+theme:
+  openapi:
+    generateCodeSamples:
+      languages: []

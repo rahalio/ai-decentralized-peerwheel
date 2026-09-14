@@ -1,0 +1,200 @@
+openapi: 3.1.0
+info:
+  title: Vehicles schemas
+  version: 0.1.0
+  description: AV assets, availability windows, and yield foresight.
+paths: {}
+components:
+  schemas:
+    VehicleId:
+      type: string
+      pattern: '^veh_[0-9A-HJKMNP-TV-Z]{26}$'
+    AvailabilityWindowId:
+      type: string
+      pattern: '^avw_[0-9A-HJKMNP-TV-Z]{26}$'
+    VehicleStatus:
+      type: string
+      enum: [active, paused, recalled]
+    SensorBinding:
+      type: object
+      required: [sensorType, endpoint]
+      properties:
+        sensorType:
+          type: string
+          enum: [lock, heartbeat, fault]
+        endpoint:
+          type: string
+          minLength: 1
+        healthy:
+          type: boolean
+    Vehicle:
+      type: object
+      required: [vehicleId, ownerId, status, createdAt, updatedAt]
+      properties:
+        vehicleId:
+          $ref: '#/components/schemas/VehicleId'
+        ownerId:
+          type: string
+        licensingTags:
+          type: array
+          items: { type: string }
+        status:
+          $ref: '#/components/schemas/VehicleStatus'
+        telematicsEndpoint:
+          type: string
+        sensors:
+          type: array
+          items:
+            $ref: '#/components/schemas/SensorBinding'
+        corridorId:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    VehicleCreate:
+      type: object
+      required: [ownerId]
+      properties:
+        ownerId: { type: string }
+        licensingTags:
+          type: array
+          items: { type: string }
+        telematicsEndpoint: { type: string }
+        sensors:
+          type: array
+          items:
+            $ref: '#/components/schemas/SensorBinding'
+        corridorId: { type: string }
+    VehicleUpdate:
+      type: object
+      properties:
+        licensingTags:
+          type: array
+          items: { type: string }
+        telematicsEndpoint: { type: string }
+        sensors:
+          type: array
+          items:
+            $ref: '#/components/schemas/SensorBinding'
+        status:
+          $ref: '#/components/schemas/VehicleStatus'
+        corridorId: { type: string }
+    AvailabilityWindow:
+      type: object
+      required: [availabilityWindowId, vehicleId, startAt, endAt, createdAt]
+      properties:
+        availabilityWindowId:
+          $ref: '#/components/schemas/AvailabilityWindowId'
+        vehicleId:
+          $ref: '#/components/schemas/VehicleId'
+        startAt:
+          type: string
+          format: date-time
+        endAt:
+          type: string
+          format: date-time
+        expectedNetYieldPerHour:
+          type: number
+          format: double
+        platformFeeRate:
+          type: number
+          format: double
+        pulled:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+    AvailabilityWindowCreate:
+      type: object
+      required: [startAt, endAt]
+      properties:
+        startAt:
+          type: string
+          format: date-time
+        endAt:
+          type: string
+          format: date-time
+        expectedNetYieldPerHour:
+          type: number
+          format: double
+        platformFeeRate:
+          type: number
+          format: double
+    YieldForesight:
+      type: object
+      required: [vehicleId, expectedNetYieldPerHour, platformFeeRate, currency]
+      properties:
+        vehicleId:
+          $ref: '#/components/schemas/VehicleId'
+        expectedNetYieldPerHour:
+          type: number
+          format: double
+        platformFeeRate:
+          type: number
+          format: double
+        currency:
+          type: string
+        taxiBenchmarkPerHour:
+          type: number
+          format: double
+    VehicleListData:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Vehicle'
+        nextCursor: { type: string }
+    AvailabilityWindowListData:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AvailabilityWindow'
+        nextCursor: { type: string }
+    VehicleResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/Vehicle'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+    VehicleListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/VehicleListData'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+    AvailabilityWindowResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/AvailabilityWindow'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+    AvailabilityWindowListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/AvailabilityWindowListData'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+    YieldForesightResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/YieldForesight'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta

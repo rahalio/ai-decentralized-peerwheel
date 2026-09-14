@@ -1,0 +1,103 @@
+openapi: 3.1.0
+info:
+  title: Disputes schemas
+  version: 0.1.0
+paths: {}
+components:
+  schemas:
+    DisputeId:
+      type: string
+      pattern: '^dsp_[0-9A-HJKMNP-TV-Z]{26}$'
+    DisputeStatus:
+      type: string
+      enum: [open, resolved, expired]
+    DisputeReason:
+      type: string
+      enum: [no_show, unsafe_vehicle, fare_disagreement, other]
+    DisputeEvidence:
+      type: object
+      properties:
+        rideLedgerRef: { type: string }
+        attestationIds:
+          type: array
+          items: { type: string }
+        ownerNotes: { type: string }
+        riderNotes: { type: string }
+    Dispute:
+      type: object
+      required: [disputeId, rideId, reason, status, deadlineAt, createdAt, updatedAt]
+      properties:
+        disputeId:
+          $ref: '#/components/schemas/DisputeId'
+        rideId: { type: string }
+        reason:
+          $ref: '#/components/schemas/DisputeReason'
+        status:
+          $ref: '#/components/schemas/DisputeStatus'
+        evidence:
+          $ref: '#/components/schemas/DisputeEvidence'
+        resolution: { type: string }
+        deadlineAt: { type: string, format: date-time }
+        resolvedAt: { type: string, format: date-time }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    DisputeCreate:
+      type: object
+      required: [rideId, reason]
+      properties:
+        rideId: { type: string }
+        reason:
+          $ref: '#/components/schemas/DisputeReason'
+        evidence:
+          $ref: '#/components/schemas/DisputeEvidence'
+    DisputeResolveRequest:
+      type: object
+      required: [resolution]
+      properties:
+        resolution: { type: string, minLength: 1 }
+    DisputeExtendRequest:
+      type: object
+      required: [newDeadlineAt]
+      properties:
+        newDeadlineAt: { type: string, format: date-time }
+    DisputeCasePack:
+      type: object
+      required: [disputeId, exportedAt, payload]
+      properties:
+        disputeId:
+          $ref: '#/components/schemas/DisputeId'
+        exportedAt: { type: string, format: date-time }
+        payload: { type: object, additionalProperties: true }
+    DisputeListData:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Dispute'
+        nextCursor: { type: string }
+    DisputeResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/Dispute'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+    DisputeListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/DisputeListData'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+    DisputeCasePackResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/DisputeCasePack'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta

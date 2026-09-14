@@ -1,0 +1,89 @@
+openapi: 3.1.0
+info:
+  title: Canvas schemas
+  version: 0.1.0
+paths: {}
+components:
+  schemas:
+    CanvasFitId:
+      type: string
+      pattern: '^cvs_[0-9A-HJKMNP-TV-Z]{26}$'
+    ChannelMetric:
+      type: object
+      required: [channel, rides, conversionRate]
+      properties:
+        channel:
+          type: string
+          enum: [app, oem_deeplink, corporate]
+        rides: { type: integer }
+        conversionRate: { type: number, format: double }
+        revenue: { type: number, format: double }
+    CostRevenuePlan:
+      type: object
+      required: [period, plannedCost, plannedRevenue]
+      properties:
+        period: { type: string }
+        plannedCost: { type: number, format: double }
+        plannedRevenue: { type: number, format: double }
+        actualCost: { type: number, format: double }
+        actualRevenue: { type: number, format: double }
+        costVariance: { type: number, format: double }
+        revenueVariance: { type: number, format: double }
+    CanvasRevision:
+      type: object
+      required: [revisedAt, valueProposition, customerSegments]
+      properties:
+        revisedAt: { type: string, format: date-time }
+        valueProposition: { type: string }
+        customerSegments:
+          type: array
+          items: { type: string }
+        note: { type: string }
+    CanvasFit:
+      type: object
+      required: [canvasFitId, valueProposition, customerSegments, updatedAt]
+      properties:
+        canvasFitId:
+          $ref: '#/components/schemas/CanvasFitId'
+        valueProposition: { type: string, minLength: 1 }
+        customerSegments:
+          type: array
+          items: { type: string }
+          minItems: 1
+        channelMetrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChannelMetric'
+        costRevenuePlan:
+          $ref: '#/components/schemas/CostRevenuePlan'
+        revisions:
+          type: array
+          items:
+            $ref: '#/components/schemas/CanvasRevision'
+        publishedToMatching: { type: boolean }
+        updatedAt: { type: string, format: date-time }
+    CanvasFitUpdate:
+      type: object
+      required: [valueProposition, customerSegments]
+      properties:
+        valueProposition: { type: string, minLength: 1 }
+        customerSegments:
+          type: array
+          items: { type: string }
+          minItems: 1
+        channelMetrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChannelMetric'
+        costRevenuePlan:
+          $ref: '#/components/schemas/CostRevenuePlan'
+        note: { type: string }
+        publishToMatching: { type: boolean }
+    CanvasFitResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/CanvasFit'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta

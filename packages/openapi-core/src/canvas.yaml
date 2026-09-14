@@ -1,0 +1,64 @@
+openapi: 3.1.0
+info:
+  title: Canvas API
+  version: 0.1.0
+  description: |
+    Paired value proposition / customer segment operating canvas with channel KPIs and monthly variance (BR-5, BR-6, BR-11).
+  license:
+    name: Proprietary
+    url: https://peerwheel.local/license
+  x-domain: cvs
+servers:
+  - url: https://api.peerwheel.local
+security:
+  - apiKey: []
+tags:
+  - name: Canvas
+    description: Operating canvas fit
+paths:
+  /v1/canvas/fits:
+    get:
+      operationId: getCanvasFit
+      tags: [Canvas]
+      summary: Get the current paired canvas fit
+      responses:
+        '200':
+          description: Canvas fit
+          content:
+            application/json:
+              schema:
+                $ref: ./canvas.schemas.yaml#/components/schemas/CanvasFitResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+    put:
+      operationId: updateCanvasFit
+      tags: [Canvas]
+      summary: Update VP and segments together (paired object)
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./canvas.schemas.yaml#/components/schemas/CanvasFitUpdate
+      responses:
+        '200':
+          description: Updated canvas
+          content:
+            application/json:
+              schema:
+                $ref: ./canvas.schemas.yaml#/components/schemas/CanvasFitResponse
+        '400':
+          $ref: ./common/responses.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+components:
+  securitySchemes:
+    apiKey:
+      $ref: ./common/security.yaml#/components/securitySchemes/apiKey

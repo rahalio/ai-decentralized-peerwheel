@@ -1,0 +1,187 @@
+openapi: 3.1.0
+info:
+  title: Rides API
+  version: 0.1.0
+  description: |
+    On-demand matching with taxi-benchmark pricing bands and dual-readable ride ledger (BR-2, BR-4, BR-6).
+  license:
+    name: Proprietary
+    url: https://peerwheel.local/license
+  x-domain: rid
+servers:
+  - url: https://api.peerwheel.local
+security:
+  - apiKey: []
+tags:
+  - name: Rides
+    description: Matching and ride lifecycle
+paths:
+  /v1/rides:
+    get:
+      operationId: listRides
+      tags: [Rides]
+      summary: List rides
+      parameters:
+        - name: cursor
+          in: query
+          schema: { type: string }
+        - name: status
+          in: query
+          schema:
+            $ref: ./rides.schemas.yaml#/components/schemas/RideStatus
+        - name: channel
+          in: query
+          schema:
+            $ref: ./rides.schemas.yaml#/components/schemas/RideChannel
+      responses:
+        '200':
+          description: Rides page
+          content:
+            application/json:
+              schema:
+                $ref: ./rides.schemas.yaml#/components/schemas/RideListResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+    post:
+      operationId: requestRide
+      tags: [Rides]
+      summary: Request a ride
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./rides.schemas.yaml#/components/schemas/RideCreate
+      responses:
+        '201':
+          description: Ride requested
+          content:
+            application/json:
+              schema:
+                $ref: ./rides.schemas.yaml#/components/schemas/RideResponse
+        '400':
+          $ref: ./common/responses.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/rides/{rideId}:
+    get:
+      operationId: getRide
+      tags: [Rides]
+      summary: Get ride with dual-readable ledger
+      parameters:
+        - name: rideId
+          in: path
+          required: true
+          schema:
+            $ref: ./rides.schemas.yaml#/components/schemas/RideId
+      responses:
+        '200':
+          description: Ride receipt
+          content:
+            application/json:
+              schema:
+                $ref: ./rides.schemas.yaml#/components/schemas/RideResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/rides/{rideId}/match:
+    post:
+      operationId: matchRide
+      tags: [Rides]
+      summary: Match or reassign a vehicle to a ride
+      parameters:
+        - name: rideId
+          in: path
+          required: true
+          schema:
+            $ref: ./rides.schemas.yaml#/components/schemas/RideId
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: ./rides.schemas.yaml#/components/schemas/RideMatchRequest
+      responses:
+        '200':
+          description: Ride matched
+          content:
+            application/json:
+              schema:
+                $ref: ./rides.schemas.yaml#/components/schemas/RideResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        '409':
+          $ref: ./common/responses.yaml#/components/responses/Conflict
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/rides/{rideId}/complete:
+    post:
+      operationId: completeRide
+      tags: [Rides]
+      summary: Mark ride completed
+      parameters:
+        - name: rideId
+          in: path
+          required: true
+          schema:
+            $ref: ./rides.schemas.yaml#/components/schemas/RideId
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      responses:
+        '200':
+          description: Ride completed
+          content:
+            application/json:
+              schema:
+                $ref: ./rides.schemas.yaml#/components/schemas/RideResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/rides/{rideId}/refuse:
+    post:
+      operationId: refuseRide
+      tags: [Rides]
+      summary: Rider refuses vehicle after failed pre-ride attestation
+      parameters:
+        - name: rideId
+          in: path
+          required: true
+          schema:
+            $ref: ./rides.schemas.yaml#/components/schemas/RideId
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      responses:
+        '200':
+          description: Ride refused
+          content:
+            application/json:
+              schema:
+                $ref: ./rides.schemas.yaml#/components/schemas/RideResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+components:
+  securitySchemes:
+    apiKey:
+      $ref: ./common/security.yaml#/components/securitySchemes/apiKey

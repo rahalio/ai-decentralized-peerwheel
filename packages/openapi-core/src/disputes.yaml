@@ -1,0 +1,189 @@
+openapi: 3.1.0
+info:
+  title: Disputes API
+  version: 0.1.0
+  description: |
+    Time-boxed dispute desk with dual-readable ledger and IoT evidence (BR-2, BR-9).
+  license:
+    name: Proprietary
+    url: https://peerwheel.local/license
+  x-domain: dsp
+servers:
+  - url: https://api.peerwheel.local
+security:
+  - apiKey: []
+tags:
+  - name: Disputes
+    description: Dispute adjudication
+paths:
+  /v1/disputes:
+    get:
+      operationId: listDisputes
+      tags: [Disputes]
+      summary: List disputes
+      parameters:
+        - name: cursor
+          in: query
+          schema: { type: string }
+        - name: status
+          in: query
+          schema:
+            $ref: ./disputes.schemas.yaml#/components/schemas/DisputeStatus
+      responses:
+        '200':
+          description: Disputes page
+          content:
+            application/json:
+              schema:
+                $ref: ./disputes.schemas.yaml#/components/schemas/DisputeListResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+    post:
+      operationId: openDispute
+      tags: [Disputes]
+      summary: Open a dispute case
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./disputes.schemas.yaml#/components/schemas/DisputeCreate
+      responses:
+        '201':
+          description: Dispute opened
+          content:
+            application/json:
+              schema:
+                $ref: ./disputes.schemas.yaml#/components/schemas/DisputeResponse
+        '400':
+          $ref: ./common/responses.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/disputes/{disputeId}:
+    get:
+      operationId: getDispute
+      tags: [Disputes]
+      summary: Get dispute case file
+      parameters:
+        - name: disputeId
+          in: path
+          required: true
+          schema:
+            $ref: ./disputes.schemas.yaml#/components/schemas/DisputeId
+      responses:
+        '200':
+          description: Dispute
+          content:
+            application/json:
+              schema:
+                $ref: ./disputes.schemas.yaml#/components/schemas/DisputeResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/disputes/{disputeId}/resolve:
+    post:
+      operationId: resolveDispute
+      tags: [Disputes]
+      summary: Resolve a dispute within the time box
+      parameters:
+        - name: disputeId
+          in: path
+          required: true
+          schema:
+            $ref: ./disputes.schemas.yaml#/components/schemas/DisputeId
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./disputes.schemas.yaml#/components/schemas/DisputeResolveRequest
+      responses:
+        '200':
+          description: Resolved
+          content:
+            application/json:
+              schema:
+                $ref: ./disputes.schemas.yaml#/components/schemas/DisputeResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        '409':
+          $ref: ./common/responses.yaml#/components/responses/Conflict
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/disputes/{disputeId}/extend:
+    post:
+      operationId: extendDispute
+      tags: [Disputes]
+      summary: Extend dispute deadline within policy
+      parameters:
+        - name: disputeId
+          in: path
+          required: true
+          schema:
+            $ref: ./disputes.schemas.yaml#/components/schemas/DisputeId
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./disputes.schemas.yaml#/components/schemas/DisputeExtendRequest
+      responses:
+        '200':
+          description: Extended
+          content:
+            application/json:
+              schema:
+                $ref: ./disputes.schemas.yaml#/components/schemas/DisputeResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/disputes/{disputeId}/export:
+    post:
+      operationId: exportDisputeCasePack
+      tags: [Disputes]
+      summary: Export case pack for legal / partner review
+      parameters:
+        - name: disputeId
+          in: path
+          required: true
+          schema:
+            $ref: ./disputes.schemas.yaml#/components/schemas/DisputeId
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      responses:
+        '200':
+          description: Case pack
+          content:
+            application/json:
+              schema:
+                $ref: ./disputes.schemas.yaml#/components/schemas/DisputeCasePackResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+components:
+  securitySchemes:
+    apiKey:
+      $ref: ./common/security.yaml#/components/securitySchemes/apiKey

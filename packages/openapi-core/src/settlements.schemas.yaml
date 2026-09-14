@@ -1,0 +1,68 @@
+openapi: 3.1.0
+info:
+  title: Settlements schemas
+  version: 0.1.0
+paths: {}
+components:
+  schemas:
+    SettlementId:
+      type: string
+      pattern: '^stl_[0-9A-HJKMNP-TV-Z]{26}$'
+    SettlementStatus:
+      type: string
+      enum: [pending, executed, blocked, failed]
+    SettlementRail:
+      type: string
+      enum: [fiat, crypto]
+    Settlement:
+      type: object
+      required: [settlementId, rideId, status, amount, currency, platformFeeRate, rail, createdAt, updatedAt]
+      properties:
+        settlementId:
+          $ref: '#/components/schemas/SettlementId'
+        rideId: { type: string }
+        amount: { type: number, format: double }
+        currency: { type: string }
+        status:
+          $ref: '#/components/schemas/SettlementStatus'
+        platformFeeRate: { type: number, format: double }
+        platformFeeAmount: { type: number, format: double }
+        rail:
+          $ref: '#/components/schemas/SettlementRail'
+        cryptoAllowed: { type: boolean }
+        attestationUnlockRequired: { type: boolean }
+        slaDeadlineAt: { type: string, format: date-time }
+        bankFloatBaselineHours: { type: number, format: double }
+        executedAt: { type: string, format: date-time }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    SettlementExecuteRequest:
+      type: object
+      properties:
+        rail:
+          $ref: '#/components/schemas/SettlementRail'
+    SettlementListData:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Settlement'
+        nextCursor: { type: string }
+    SettlementResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/Settlement'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+    SettlementListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/SettlementListData'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta

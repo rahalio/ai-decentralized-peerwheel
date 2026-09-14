@@ -1,0 +1,35 @@
+{
+  "name": "peerwheel",
+  "version": "0.1.0",
+  "description": "Peerwheel — peer-to-peer AV sharing desk (OpenAPI-first DDD monorepo)",
+  "private": true,
+  "packageManager": "pnpm@10.0.0",
+  "scripts": {
+    "lint": "eslint .",
+    "lint:openapi": "pnpm --filter @peerwheel/openapi-core lint:domains",
+    "bundle:openapi": "pnpm --filter @peerwheel/openapi-core bundle:domains",
+    "build": "pnpm --filter @peerwheel/core build && pnpm --filter @peerwheel/services build && pnpm --filter @peerwheel/adapters build && pnpm --filter @peerwheel/api-server build",
+    "dev:api": "pnpm --filter @peerwheel/api-server dev",
+    "dev:web": "pnpm --filter @peerwheel/webapp dev",
+    "build:web": "pnpm --filter @peerwheel/webapp build",
+    "codegen:core": "node scripts/sync-codegen-paths.mjs && PYTHONPATH=.codegen/codegen/src python3 -m zero_codegen.cli.main generate --all --layers core --config .codegen/.zero-codegen-merged.json --skip-build",
+    "codegen:identity": "node scripts/sync-codegen-paths.mjs && PYTHONPATH=.codegen/codegen/src python3 -m zero_codegen.cli.main generate --domain identity --config .codegen/.zero-codegen-merged.json --skip-build",
+    "codegen:all": "node scripts/sync-codegen-paths.mjs && PYTHONPATH=.codegen/codegen/src python3 -m zero_codegen.cli.main generate --all --config .codegen/.zero-codegen-merged.json --skip-build",
+    "codegen:paths": "node scripts/sync-codegen-paths.mjs"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "@types/node": "^20.0.0",
+    "eslint": "^9.0.0",
+    "prettier": "^3.8.1",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.55.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild"]
+  },
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=9.0.0"
+  }
+}

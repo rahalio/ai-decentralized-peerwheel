@@ -1,0 +1,244 @@
+openapi: 3.1.0
+info:
+  title: Vehicles API
+  version: 0.1.0
+  description: |
+    AV asset registration, licensing tags, sensor bindings, availability windows,
+    and owner yield foresight (BR-7, BR-10).
+  license:
+    name: Proprietary
+    url: https://peerwheel.local/license
+  x-domain: veh
+servers:
+  - url: https://api.peerwheel.local
+security:
+  - apiKey: []
+tags:
+  - name: Vehicles
+    description: AV assets and availability
+paths:
+  /v1/vehicles:
+    get:
+      operationId: listVehicles
+      tags: [Vehicles]
+      summary: List vehicles for the current tenant
+      parameters:
+        - name: cursor
+          in: query
+          schema: { type: string }
+        - name: status
+          in: query
+          schema:
+            $ref: ./vehicles.schemas.yaml#/components/schemas/VehicleStatus
+        - name: ownerId
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: Vehicles page
+          content:
+            application/json:
+              schema:
+                $ref: ./vehicles.schemas.yaml#/components/schemas/VehicleListResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+    post:
+      operationId: registerVehicle
+      tags: [Vehicles]
+      summary: Register an AV asset
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./vehicles.schemas.yaml#/components/schemas/VehicleCreate
+      responses:
+        '201':
+          description: Vehicle created
+          content:
+            application/json:
+              schema:
+                $ref: ./vehicles.schemas.yaml#/components/schemas/VehicleResponse
+        '400':
+          $ref: ./common/responses.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/vehicles/{vehicleId}:
+    get:
+      operationId: getVehicle
+      tags: [Vehicles]
+      summary: Get a vehicle
+      parameters:
+        - name: vehicleId
+          in: path
+          required: true
+          schema:
+            $ref: ./vehicles.schemas.yaml#/components/schemas/VehicleId
+      responses:
+        '200':
+          description: Vehicle
+          content:
+            application/json:
+              schema:
+                $ref: ./vehicles.schemas.yaml#/components/schemas/VehicleResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+    patch:
+      operationId: updateVehicle
+      tags: [Vehicles]
+      summary: Update vehicle licensing, sensors, or status
+      parameters:
+        - name: vehicleId
+          in: path
+          required: true
+          schema:
+            $ref: ./vehicles.schemas.yaml#/components/schemas/VehicleId
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./vehicles.schemas.yaml#/components/schemas/VehicleUpdate
+      responses:
+        '200':
+          description: Updated vehicle
+          content:
+            application/json:
+              schema:
+                $ref: ./vehicles.schemas.yaml#/components/schemas/VehicleResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/vehicles/{vehicleId}/availability:
+    get:
+      operationId: listAvailabilityWindows
+      tags: [Vehicles]
+      summary: List availability windows for a vehicle
+      parameters:
+        - name: vehicleId
+          in: path
+          required: true
+          schema:
+            $ref: ./vehicles.schemas.yaml#/components/schemas/VehicleId
+        - name: cursor
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: Availability windows
+          content:
+            application/json:
+              schema:
+                $ref: ./vehicles.schemas.yaml#/components/schemas/AvailabilityWindowListResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+    post:
+      operationId: publishAvailability
+      tags: [Vehicles]
+      summary: Publish an idle availability window
+      parameters:
+        - name: vehicleId
+          in: path
+          required: true
+          schema:
+            $ref: ./vehicles.schemas.yaml#/components/schemas/VehicleId
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./vehicles.schemas.yaml#/components/schemas/AvailabilityWindowCreate
+      responses:
+        '201':
+          description: Window published
+          content:
+            application/json:
+              schema:
+                $ref: ./vehicles.schemas.yaml#/components/schemas/AvailabilityWindowResponse
+        '400':
+          $ref: ./common/responses.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '409':
+          $ref: ./common/responses.yaml#/components/responses/Conflict
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/vehicles/{vehicleId}/availability/{availabilityWindowId}/pull:
+    post:
+      operationId: pullAvailability
+      tags: [Vehicles]
+      summary: Instantly pull a vehicle window from the marketplace
+      parameters:
+        - name: vehicleId
+          in: path
+          required: true
+          schema:
+            $ref: ./vehicles.schemas.yaml#/components/schemas/VehicleId
+        - name: availabilityWindowId
+          in: path
+          required: true
+          schema:
+            $ref: ./vehicles.schemas.yaml#/components/schemas/AvailabilityWindowId
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      responses:
+        '200':
+          description: Window pulled
+          content:
+            application/json:
+              schema:
+                $ref: ./vehicles.schemas.yaml#/components/schemas/AvailabilityWindowResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/vehicles/{vehicleId}/yield-foresight:
+    get:
+      operationId: getYieldForesight
+      tags: [Vehicles]
+      summary: Expected net yield per idle hour with disclosed fee line
+      parameters:
+        - name: vehicleId
+          in: path
+          required: true
+          schema:
+            $ref: ./vehicles.schemas.yaml#/components/schemas/VehicleId
+      responses:
+        '200':
+          description: Yield foresight
+          content:
+            application/json:
+              schema:
+                $ref: ./vehicles.schemas.yaml#/components/schemas/YieldForesightResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+components:
+  securitySchemes:
+    apiKey:
+      $ref: ./common/security.yaml#/components/securitySchemes/apiKey

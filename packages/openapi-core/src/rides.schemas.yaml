@@ -1,0 +1,101 @@
+openapi: 3.1.0
+info:
+  title: Rides schemas
+  version: 0.1.0
+paths: {}
+components:
+  schemas:
+    RideId:
+      type: string
+      pattern: '^rid_[0-9A-HJKMNP-TV-Z]{26}$'
+    RideStatus:
+      type: string
+      enum: [requested, matched, in_progress, completed, cancelled, refused]
+    RideChannel:
+      type: string
+      enum: [app, oem_deeplink, corporate]
+    PriceBand:
+      type: object
+      required: [currency, low, high, taxiBenchmark]
+      properties:
+        currency: { type: string }
+        low: { type: number, format: double }
+        high: { type: number, format: double }
+        taxiBenchmark: { type: number, format: double }
+    RideLedgerEntry:
+      type: object
+      required: [at, event, actor]
+      properties:
+        at: { type: string, format: date-time }
+        event: { type: string }
+        actor:
+          type: string
+          enum: [owner, rider, system, ops]
+        detail: { type: string }
+    Ride:
+      type: object
+      required: [rideId, status, channel, createdAt, updatedAt]
+      properties:
+        rideId:
+          $ref: '#/components/schemas/RideId'
+        vehicleId: { type: string }
+        riderId: { type: string }
+        ownerId: { type: string }
+        status:
+          $ref: '#/components/schemas/RideStatus'
+        pickup: { type: string }
+        dropoff: { type: string }
+        corridorId: { type: string }
+        channel:
+          $ref: '#/components/schemas/RideChannel'
+        priceBand:
+          $ref: '#/components/schemas/PriceBand'
+        ledger:
+          type: array
+          items:
+            $ref: '#/components/schemas/RideLedgerEntry'
+        attestationHold:
+          type: boolean
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        completedAt: { type: string, format: date-time }
+    RideCreate:
+      type: object
+      required: [riderId, pickup]
+      properties:
+        riderId: { type: string }
+        pickup: { type: string }
+        dropoff: { type: string }
+        corridorId: { type: string }
+        channel:
+          $ref: '#/components/schemas/RideChannel'
+    RideMatchRequest:
+      type: object
+      properties:
+        vehicleId: { type: string }
+        forceReassign: { type: boolean }
+    RideListData:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Ride'
+        nextCursor: { type: string }
+    RideResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/Ride'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+    RideListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/RideListData'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta

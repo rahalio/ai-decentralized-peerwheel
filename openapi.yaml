@@ -1,0 +1,712 @@
+openapi: 3.0.3
+info:
+  title: Peerwheel
+  version: 0.1.0
+  description: Peer-to-peer autonomous vehicle sharing with IoT integrity attestations and ledger settlement.
+  x-product-slug: ai-decentralized-peerwheel
+  x-source: ai-in-decentralized+ai/business-models-based-on-blockchain-ai-iot/
+servers:
+- url: https://api.example.com
+tags:
+- name: Vehicles
+  description: AV assets and availability
+- name: Rides
+  description: Matching and ride lifecycle
+- name: Attestations
+  description: IoT integrity proofs
+- name: Settlements
+  description: Peer payouts
+- name: Disputes
+  description: Dispute adjudication
+- name: Canvas
+  description: Operating canvas fit
+paths:
+  /v1/vehicles:
+    get:
+      operationId: listVehicles
+      tags:
+      - Vehicles
+      security:
+      - BearerAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListEnvelopeVehicle'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      parameters:
+      - $ref: '#/components/parameters/Cursor'
+      - $ref: '#/components/parameters/Limit'
+    post:
+      operationId: registerVehicle
+      tags:
+      - Vehicles
+      security:
+      - BearerAuth: []
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataEnvelopeVehicle'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VehicleCreate'
+  /v1/vehicles/{vehicleId}/availability:
+    post:
+      operationId: publishAvailability
+      tags:
+      - Vehicles
+      security:
+      - BearerAuth: []
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataEnvelopeAvailabilityWindow'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      parameters:
+      - name: vehicleId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AvailabilityWindow'
+  /v1/rides:
+    get:
+      operationId: listRides
+      tags:
+      - Rides
+      security:
+      - BearerAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListEnvelopeRide'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      parameters:
+      - $ref: '#/components/parameters/Cursor'
+      - name: status
+        in: query
+        schema:
+          type: string
+    post:
+      operationId: requestRide
+      tags:
+      - Rides
+      security:
+      - BearerAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataEnvelopeRide'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RideCreate'
+  /v1/rides/{rideId}/attestations:
+    post:
+      operationId: submitIntegrityAttestation
+      tags:
+      - Attestations
+      security:
+      - ApiKeyAuth: []
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataEnvelopeIntegrityAttestation'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      parameters:
+      - name: rideId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IntegrityAttestation'
+  /v1/settlements:
+    get:
+      operationId: listSettlements
+      tags:
+      - Settlements
+      security:
+      - BearerAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListEnvelopeSettlement'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      parameters:
+      - $ref: '#/components/parameters/Cursor'
+  /v1/settlements/{settlementId}:
+    get:
+      operationId: getSettlement
+      tags:
+      - Settlements
+      security:
+      - BearerAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataEnvelopeSettlement'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      parameters:
+      - name: settlementId
+        in: path
+        required: true
+        schema:
+          type: string
+  /v1/disputes:
+    post:
+      operationId: openDispute
+      tags:
+      - Disputes
+      security:
+      - BearerAuth: []
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataEnvelopeDispute'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DisputeCreate'
+  /v1/canvas/fits:
+    get:
+      operationId: getCanvasFit
+      tags:
+      - Canvas
+      security:
+      - BearerAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataEnvelopeCanvasFit'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    put:
+      operationId: updateCanvasFit
+      tags:
+      - Canvas
+      security:
+      - BearerAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataEnvelopeCanvasFit'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CanvasFit'
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    Cursor:
+      name: cursor
+      in: query
+      schema:
+        type: string
+    Limit:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 25
+  responses:
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    NotFound:
+      description: Not found
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    UnprocessableEntity:
+      description: Unprocessable entity
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+  schemas:
+    ResponseMeta:
+      type: object
+      required:
+      - requestId
+      - timestamp
+      properties:
+        requestId:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+    Problem:
+      type: object
+      required:
+      - type
+      - title
+      - status
+      properties:
+        type:
+          type: string
+          format: uri
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+    Vehicle:
+      type: object
+      required:
+      - id
+      - ownerId
+      - status
+      properties:
+        id:
+          type: string
+        ownerId:
+          type: string
+        licensingTags:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+          enum:
+          - active
+          - paused
+          - recalled
+    VehicleCreate:
+      type: object
+      required:
+      - ownerId
+      properties:
+        ownerId:
+          type: string
+        licensingTags:
+          type: array
+          items:
+            type: string
+        telematicsEndpoint:
+          type: string
+    AvailabilityWindow:
+      type: object
+      required:
+      - id
+      - vehicleId
+      - startAt
+      - endAt
+      properties:
+        id:
+          type: string
+        vehicleId:
+          type: string
+        startAt:
+          type: string
+          format: date-time
+        endAt:
+          type: string
+          format: date-time
+        expectedNetYield:
+          type: number
+    Ride:
+      type: object
+      required:
+      - id
+      - status
+      properties:
+        id:
+          type: string
+        vehicleId:
+          type: string
+        riderId:
+          type: string
+        status:
+          type: string
+        priceBand:
+          type: string
+    RideCreate:
+      type: object
+      required:
+      - riderId
+      - pickup
+      properties:
+        riderId:
+          type: string
+        pickup:
+          type: string
+        dropoff:
+          type: string
+    IntegrityAttestation:
+      type: object
+      required:
+      - id
+      - rideId
+      - result
+      properties:
+        id:
+          type: string
+        rideId:
+          type: string
+        result:
+          type: string
+          enum:
+          - passed
+          - failed
+          - hold
+        proofHash:
+          type: string
+        phase:
+          type: string
+          enum:
+          - pre
+          - during
+          - post
+    Settlement:
+      type: object
+      required:
+      - id
+      - rideId
+      - status
+      properties:
+        id:
+          type: string
+        rideId:
+          type: string
+        amount:
+          type: number
+        currency:
+          type: string
+        status:
+          type: string
+          enum:
+          - pending
+          - executed
+          - blocked
+        platformFeeRate:
+          type: number
+    Dispute:
+      type: object
+      required:
+      - id
+      - rideId
+      - status
+      properties:
+        id:
+          type: string
+        rideId:
+          type: string
+        reason:
+          type: string
+        status:
+          type: string
+          enum:
+          - open
+          - resolved
+          - expired
+    DisputeCreate:
+      type: object
+      required:
+      - rideId
+      - reason
+      properties:
+        rideId:
+          type: string
+        reason:
+          type: string
+    CanvasFit:
+      type: object
+      required:
+      - valueProposition
+      - customerSegments
+      properties:
+        valueProposition:
+          type: string
+        customerSegments:
+          type: array
+          items:
+            type: string
+        channelMetrics:
+          type: object
+          additionalProperties:
+            type: number
+    DataEnvelopeVehicle:
+      type: object
+      required:
+      - data
+      - meta
+      properties:
+        data:
+          $ref: '#/components/schemas/Vehicle'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    ListEnvelopeVehicle:
+      type: object
+      required:
+      - data
+      - meta
+      properties:
+        data:
+          type: object
+          required:
+          - items
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/Vehicle'
+            nextCursor:
+              type: string
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    DataEnvelopeAvailabilityWindow:
+      type: object
+      required:
+      - data
+      - meta
+      properties:
+        data:
+          $ref: '#/components/schemas/AvailabilityWindow'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    ListEnvelopeAvailabilityWindow:
+      type: object
+      required:
+      - data
+      - meta
+      properties:
+        data:
+          type: object
+          required:
+          - items
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/AvailabilityWindow'
+            nextCursor:
+              type: string
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    DataEnvelopeRide:
+      type: object
+      required:
+      - data
+      - meta
+      properties:
+        data:
+          $ref: '#/components/schemas/Ride'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    ListEnvelopeRide:
+      type: object
+      required:
+      - data
+      - meta
+      properties:
+        data:
+          type: object
+          required:
+          - items
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/Ride'
+            nextCursor:
+              type: string
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    DataEnvelopeIntegrityAttestation:
+      type: object
+      required:
+      - data
+      - meta
+      properties:
+        data:
+          $ref: '#/components/schemas/IntegrityAttestation'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    ListEnvelopeIntegrityAttestation:
+      type: object
+      required:
+      - data
+      - meta
+      properties:
+        data:
+          type: object
+          required:
+          - items
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/IntegrityAttestation'
+            nextCursor:
+              type: string
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    DataEnvelopeSettlement:
+      type: object
+      required:
+      - data
+      - meta
+      properties:
+        data:
+          $ref: '#/components/schemas/Settlement'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    ListEnvelopeSettlement:
+      type: object
+      required:
+      - data
+      - meta
+      properties:
+        data:
+          type: object
+          required:
+          - items
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/Settlement'
+            nextCursor:
+              type: string
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    DataEnvelopeDispute:
+      type: object
+      required:
+      - data
+      - meta
+      properties:
+        data:
+          $ref: '#/components/schemas/Dispute'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    ListEnvelopeDispute:
+      type: object
+      required:
+      - data
+      - meta
+      properties:
+        data:
+          type: object
+          required:
+          - items
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/Dispute'
+            nextCursor:
+              type: string
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    DataEnvelopeCanvasFit:
+      type: object
+      required:
+      - data
+      - meta
+      properties:
+        data:
+          $ref: '#/components/schemas/CanvasFit'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    ListEnvelopeCanvasFit:
+      type: object
+      required:
+      - data
+      - meta
+      properties:
+        data:
+          type: object
+          required:
+          - items
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/CanvasFit'
+            nextCursor:
+              type: string
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
